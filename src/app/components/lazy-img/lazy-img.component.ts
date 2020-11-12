@@ -16,24 +16,23 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LazyImgComponent implements AfterViewInit {
-  observer: IntersectionObserver;
+  private observer: IntersectionObserver;
   @Input() src = '';
   @Input() alt = '';
-
-  @HostBinding('class.loaded') isLoaded = false;
 
   @ViewChild('lazyImage', { static: true }) lazyImage: ElementRef<
     HTMLImageElement
   >;
 
   constructor() {}
-
-  async ngAfterViewInit() {
-    const options: IntersectionObserverInit = {
-      root: this.lazyImage.nativeElement.closest('ion-content'),
-    };
-
-    if ('IntersectionObserver' in window) {
+  async ngAfterViewInit(): Promise<void> {
+    if ('loading' in HTMLImageElement.prototype) {
+      this.lazyImage.nativeElement.src = this.src;
+      this.lazyImage.nativeElement.alt = this.alt;
+    } else if ('IntersectionObserver' in window) {
+      const options: IntersectionObserverInit = {
+        root: this.lazyImage.nativeElement.closest('ion-content'),
+      };
       this.observer = new IntersectionObserver(
         await this.onObserve.bind(this),
         options
@@ -54,7 +53,7 @@ export class LazyImgComponent implements AfterViewInit {
     }
   }
 
-  applyImage(target: HTMLImageElement, src: string) {
+  applyImage(target: HTMLImageElement, src: string): Promise<void> {
     return new Promise((resolve) => {
       target.src = src;
       target.crossOrigin = 'anonymous';
@@ -62,7 +61,7 @@ export class LazyImgComponent implements AfterViewInit {
     });
   }
 
-  fetchImage(url: string) {
+  fetchImage(url: string): Promise<Event> {
     return new Promise((resolve, reject) => {
       const image = new Image();
       image.src = url;
@@ -72,13 +71,10 @@ export class LazyImgComponent implements AfterViewInit {
     });
   }
 
-  async preload(targetEl: HTMLImageElement) {
+  async preload(targetEl: HTMLImageElement): Promise<void> {
     // prefect the image and prime it
     await this.fetchImage(this.src);
     // ok, actually apply the image to the real img tag
     await this.applyImage(targetEl, this.src);
-
-    this.isLoaded = true
-    markDirty(this)
   }
 }

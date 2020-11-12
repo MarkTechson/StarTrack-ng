@@ -6,9 +6,7 @@
 <ion-label>
   <h3>
     <span class="index">{{ index + 1 }}</span> {{ album.attributes.name }}
-    <span class="rating" *ngIf="album.attributes.contentRating === 'explicit'"
-      >E</span
-    >
+    <span class="rating" *ngIf="album.attributes.contentRating === 'explicit'" >E</span>
   </h3>
   <ion-note>
     <p>{{ album.attributes.artistName }}</p>

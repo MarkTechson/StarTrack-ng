@@ -22,10 +22,13 @@ export class AppComponent implements OnInit {
     private metaService: Meta
   ) {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    this.setMetaTheme(prefersDark.matches);
-    prefersDark.addListener(({ matches }) => this.setMetaTheme(matches));
+    this.setMetaTheme();
+    prefersDark.addEventListener('change', () => this.setMetaTheme())
 
-    this.musicKitInstance.addEventListener(this.musicKitEvents.authorizationStatusDidChange, this.authDidChange.bind(this));
+    this.musicKitInstance.addEventListener(
+      this.musicKitEvents.authorizationStatusDidChange,
+      this.authDidChange.bind(this)
+    );
   }
   authDidChange() {
     this.isAuthorized.next(this.musicKitInstance.isAuthorized);
@@ -58,11 +61,8 @@ export class AppComponent implements OnInit {
     await this.musicKitInstance.unauthorize();
     this.menuCtrl.close();
   }
-  setMetaTheme(matches: boolean) {
-    if (matches) {
-      this.metaService.updateTag({ content: '#000000' }, 'name="theme-color"');
-    } else {
-      this.metaService.updateTag({ content: '#ffffff' }, 'name="theme-color"');
-    }
+  setMetaTheme() {
+    const color =  getComputedStyle(document.documentElement).getPropertyValue('--ion-background-color').replace(/\s+/g, '')
+    this.metaService.updateTag({ content: color, name: "theme-color" });
   }
 }
